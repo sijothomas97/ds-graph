@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Social Graph Explorer</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕸️</text></svg>" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Social Graph Explorer</h1>
+    <div class="status" id="status">Loading graph…</div>
+  </header>
+
+  <main class="layout">
+    <section class="graph-pane">
+      <svg id="graph-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="graph-controls">
+        <button id="btn-reset-layout" title="Re-run force layout">Re-layout</button>
+        <button id="btn-refresh" title="Reload graph from server">Refresh</button>
+        <span class="hint">Click a node to inspect it. Drag nodes to rearrange.</span>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <nav class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="node">Node</button>
+        <button class="tab-btn" data-tab="path">Shortest Path</button>
+        <button class="tab-btn" data-tab="mutual">Mutual Friends</button>
+        <button class="tab-btn" data-tab="centrality">Centrality</button>
+        <button class="tab-btn" data-tab="manage">Manage</button>
+      </nav>
+
+      <div class="tab-panel active" id="tab-node">
+        <h2>Selected person</h2>
+        <p class="muted" id="node-empty">Click a node in the graph to see their details, friends and recommendations.</p>
+        <div id="node-details" hidden>
+          <h3 id="node-name"></h3>
+          <div class="field">
+            <strong>Direct friends</strong>
+            <ul id="node-friends" class="chip-list"></ul>
+          </div>
+          <div class="field">
+            <strong>Recommendations (friends-of-friends)</strong>
+            <ul id="node-recs" class="chip-list"></ul>
+          </div>
+          <div class="field">
+            <strong>Extended network (reachable)</strong>
+            <ul id="node-network" class="chip-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-path">
+        <h2>Shortest path</h2>
+        <label>From <select id="path-from"></select></label>
+        <label>To <select id="path-to"></select></label>
+        <button id="btn-path">Find path</button>
+        <div id="path-result" class="result"></div>
+      </div>
+
+      <div class="tab-panel" id="tab-mutual">
+        <h2>Mutual friends</h2>
+        <label>Person A <select id="mutual-a"></select></label>
+        <label>Person B <select id="mutual-b"></select></label>
+        <button id="btn-mutual">Find mutual friends</button>
+        <div id="mutual-result" class="result"></div>
+      </div>
+
+      <div class="tab-panel" id="tab-centrality">
+        <h2>Degree centrality</h2>
+        <p class="muted">Ranked by total degree (in + out). Higher = more connected / influential.</p>
+        <button id="btn-centrality">Load ranking</button>
+        <ol id="centrality-result" class="result-list"></ol>
+      </div>
+
+      <div class="tab-panel" id="tab-manage">
+        <h2>Manage graph</h2>
+        <div class="field">
+          <strong>Add person</strong>
+          <div class="row">
+            <input id="new-person-name" placeholder="Name" />
+            <button id="btn-add-person">Add</button>
+          </div>
+        </div>
+        <div class="field">
+          <strong>Add friendship</strong>
+          <div class="row">
+            <select id="friend-from"></select>
+            <select id="friend-to"></select>
+          </div>
+          <label class="row"><input type="checkbox" id="friend-mutual" checked /> Mutual (both directions)</label>
+          <button id="btn-add-friendship">Add friendship</button>
+        </div>
+        <div id="manage-result" class="result"></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <a href="/swagger" target="_blank" rel="noopener">API docs (Swagger)</a>
+    ·
+    <a href="/graph" target="_blank" rel="noopener">Raw graph JSON</a>
+  </footer>
+
+<script src="app.js"></script>
+</body>
+</html>

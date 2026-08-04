@@ -1,0 +1,15 @@
+# Build outputs
+bin/
+obj/
+TestResults/
+
+# Runtime data (JSON graph persistence)
+SocialGraph.Api/data/
+
+# IDE
+.vs/
+.idea/
+*.user
+
+# macOS
+.DS_Store
