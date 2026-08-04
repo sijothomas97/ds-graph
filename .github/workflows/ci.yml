@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build & test (.NET 8)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore SocialGraph.sln
+
+      - name: Build (Release, warnings as errors)
+        run: dotnet build SocialGraph.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test SocialGraph.sln -c Release --no-build --logger "trx;LogFileName=test-results.trx"
+
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: "**/TestResults/*.trx"
+          if-no-files-found: ignore
+
+  docker-build:
+    name: Docker build (API)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (not pushed)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: socialgraph-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test the built image
+        run: |
+          docker run -d --name sg-api-ci -p 8080:8080 socialgraph-api:ci
+          for i in $(seq 1 20); do
+            if curl -fs http://localhost:8080/graph > /dev/null; then
+              echo "API responded successfully"
+              break
+            fi
+            if [ "$i" -eq 20 ]; then
+              echo "API did not respond in time"
+              docker logs sg-api-ci
+              exit 1
+            fi
+            sleep 1
+          done
+          curl -fs http://localhost:8080/graph | head -c 300
+          echo
+          curl -fs -o /dev/null -w "index.html: %{http_code}\n" http://localhost:8080/
+          curl -fs -o /dev/null -w "swagger: %{http_code}\n" http://localhost:8080/swagger/v1/swagger.json
+          docker stop sg-api-ci
