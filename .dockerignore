@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/TestResults/
+**/.vs/
+**/.idea/
+**/data/
+legacy/
+.git/
+.github/
+*.md
+.DS_Store
