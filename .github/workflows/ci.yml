@@ -54,6 +54,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
+          load: true
           tags: socialgraph-api:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
